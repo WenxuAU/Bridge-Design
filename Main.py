@@ -21,7 +21,7 @@ os.chdir(dir_name)
 import numpy as np
 from matplotlib import pyplot as plt
 from Bridge_design_lib.Design_Loads import M300LA,FLS
-from Bridge_design_lib.Loading_Effects import PointLoad, UniformLoad, UniformPartialSpanLoad
+from Bridge_design_lib.ActionEffects import PointLoad, UniformLoad, UniformPartialSpanLoad
 from Bridge_design_lib.Load_Distribution import LoadDist
 #%% input data 
 from Bridge_design_lib.Input_Data import InputData 

@@ -99,6 +99,7 @@ class StressResultants:
         '''depth of the neutral axis'''
         self.dn = (self.T-self.Cf)/(self.alpha2*self.fc*self.gamma*self.tw)
     def Mu(self):
+        '''ultimate moment capacity'''
         self.Mu = self.Cf*(self.d-0.5*self.hf)+self.Cw*(self.d-0.5*self.gamma*self.dn)
     
     

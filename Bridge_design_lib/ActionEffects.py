@@ -43,12 +43,13 @@ class PointLoad:
 class UniformLoad:
     '''   
     uniformly distributed load across the whole beam
-    p: the magitude of the load density per meter, downwards direction
-    l: the length of the beam (bridge)
-    y: longitudinal location where the effect is wanted
+    p: the magitude of the load density per meter, downwards direction, in N/m
+    l: the length of the beam (bridge), in m
+    y: longitudinal location where the effect is wanted, in m
     z: the vertical location where the stress is calculated
     I: moment of area
     E: Young's modulus
+    
     '''
     def __init__(self,q,l,y,**kwargs):
         self.q = q

@@ -34,25 +34,27 @@ class TBeamParam1:
                  |                 |________|
                  /                 /---tw--/
     '''
-    def __init__(self,tf,tw,hf1,hf2,h,d,As,Es,Ec,gamma):
+    def __init__(self,tf,tw,hf1,hf2,h,d,**kwargs):
         self.tf = tf
         self.tw = tw
         self.hf1 = hf1
         self.hf2 = hf2
         self.h = h
         self.d = d
-        self.n = Es/Ec
-        self.As = As
-        self.gamma = gamma
+        if len(kwargs)>1:
+            self.n = kwargs.get('Es')/kwargs.get('Ec')
+            self.As = kwargs.get('As')
+            self.gamma = kwargs.get('gamma')
+            self.dnIg = self.dnIg()
+            self.dnIcr = self.dnIcr()
         self.Ag = self.Ag()
         self.uc = self.uc()
-        # self.dnIg = self.dnIg()
-        # self.dnIcr = self.dnIcr()
+        
     def Ag(self):
         return self.tf*self.hf1+(self.d-self.hf2)*self.tw+(self.hf2-self.hf1)*(self.tf-self.tw)
     def uc(self):
         return 2*self.d-2*(self.hf2-self.hf1)+2*self.tf+\
-            2*(((self.tf-self.tw)/2)**2+(self.h2-self.h1)**2)**0.5
+            2*(((self.tf-self.tw)/2)**2+(self.hf2-self.hf1)**2)**0.5
     def dnIg(self):
         dn = (self.tf*self.hf**2/2+self.tw*(self.h-self.hf)*(self.h+self.hf)/2)/ \
             (self.tf*self.hf+self.tw*(self.h-self.hf))

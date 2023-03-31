@@ -123,7 +123,7 @@ def NosingLoad(x):
 
 #%% Fatigue design traffic load
 '''================this part is unfinished=============================='''
-'''================this part is unfinished=============================='''
+
 from Bridge_design_lib.Load_Factors_Combination import DLA
 
 def FLS(Lv,L,discount=0.5,x_shift=0):
