@@ -22,9 +22,19 @@ h = 370
 
 # design load
 Ag = tf*hf+tw*(D-hf)
-weight =  25*Ag/1e3
-WG = weight+tf*1
-wQ = tf*3 
+weight =  25*Ag/1e6
+wG = weight+tf*1e-3
+wQ = tf*3e-3
 kcs = 2
 Fedf = (1+kcs)*wG+(psis+kcs*psil)*wQ
 
+# span AB
+ML_AB = -3.062*Fedf
+MM_AB = 1.938*Fedf
+MR_AB = -5.311*Fedf
+#second momnent of area
+Iefav = 
+# span BC
+ML_AB = -3.062*Fedf
+MM_AB = 1.938*Fedf
+MR_AB = -5.311*Fedf

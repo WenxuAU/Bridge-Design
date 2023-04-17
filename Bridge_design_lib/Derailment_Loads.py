@@ -7,7 +7,7 @@ Created on Mon Feb  6 11:25:43 2023
 
 
 '''Derailment loads'''
-from Bridge_design_lib.Design_Loads import M300LA
+from Design_Loads import M300LA
 def CaseA(Lv,gauge,x_shift=0,y_shift=0):
     
     ''' 
@@ -29,9 +29,7 @@ def CaseA(Lv,gauge,x_shift=0,y_shift=0):
                          /
                         /
                        /  
-                      /
-                     /
-                     ---------------------------------->y
+                       ----------------->y
     '''
     '''Load case A according to Section 11.5.3 of AS 5100.2.
     Principle: shifting the 300LA loads laterally;

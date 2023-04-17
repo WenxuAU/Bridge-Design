@@ -45,15 +45,18 @@ class LoadDist:
             if self.trk_no>1:
                 if self.w>self.dis_trks:
                     self.w=self.dis_trks
-    # if self.track_fm==2:
-        # '''direct fixation track'''
+        if self.track_fm==2:
+           '''direct fixation track: assume uniform distribution along the track'''
+           
        
         # '''
         # ??????how to determine the load distribution on this type of bridge???????
         # '''
-    def M300LAOnBr(self,Lv,L,discount,x_shift):
+           pass
+    def M300LADist(self,Lv,L,discount,x_shift):
         '''
-        The effect of 300LA on the bridge deck, as opposed to that on the railway track.
+        The effect of 300LA on the bridge deck, as opposed to that on the railway track, i.e. further 
+        transmission downwards to the bridge deck.
         Lv: the span between axle group centres, i.e. vehicle length,in metres, between 12 and 20m
         L: the characteristic lengtho of a bridge component, e.g. bridge length
         x_shift: the shift of the first axle group starting point longitudinally along the bridge;

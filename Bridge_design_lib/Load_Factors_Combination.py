@@ -7,8 +7,6 @@ Created on Sun Feb  5 21:42:19 2023
 
 
 
-
-
 class Object:
     pass 
 
@@ -49,41 +47,7 @@ class LoadFactors:
         self.ULS.derailmentCaseB = 1.0
         self.SLS.M300LA = 1.0
         self.SLS.braketraction = 1.0
-class DLA:
-    def __init__(self,L):
-        """dynamic load allowance, applies to both ULS and SLS, section 9.5.1 of AS5100.2
-        L: characteristic length of a component in meters """
-        self.L = L
-    def DynBending(self):
-        '''Dynamic load allowance for bending effects, Section 9.5.3 of AS5100.2        
-        alpha: the dynamic load factor. alpha*deadload=dynamic load'''
-        alpha = 2.16/(self.L**0.5-0.2)-0.27
-        if alpha>0.67:
-            alpha = 0.67
-        if alpha < 0.2:
-            alpha = 0.2 
-        self.alpha_bending = alpha
-    def DynOthers(self):
-        '''Dynamic load allowance for other load effects, Section 9.5.5 of AS5100.2
-        L: characteristic length of a component in meters;
-        Dynamic load effct for torsion, shear and reactions'''
-        self.alpha_others = 0.67*self.DynBending()
-        
-    def DesignAction(self,load_factor,loads):
-        #=================================not finished=========================
-        #=================================not finished=========================
-        #=================================not finished=========================
-        '''Section 9.5.1 of AS5100.2
-        Design action is the design loads in various directions.
-        alpha: the dynamic load factor, determined by DynaBending(L) or DhnOthers(L), depending on the type of the loading;
-        load_factor: load factors, determined by LoadactorsV() and LoadFactors_Horizontal(), for ULS and SLS it has 
-        different values;
-        loads: M300LA(span), BrakeForce(LLF,n), TractionForce(LLF,n) and NosingLoad(rail_type,*args)
-        '''
-        '''the effect is from bending''' 
-        self.designaction_bending = (self.alpha_bending+1)*load_factor*loads
-        '''the effect is from other loading'''
-        self.designaction_others = (self.alpha_others+1)*load_factor*loads
+
         
 
 

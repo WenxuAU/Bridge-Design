@@ -6,6 +6,53 @@ Created on Tue Mar 28 10:58:58 2023
 """
 import numpy as np
 
+'''---------------------longitudinal reinforcement due to flexure-----------'''
+
+def Astfmin(D,d,bw,fctf,fsy,option=1, **kwargs):
+
+    '''the minimum flexural tensile reinforcement area, Eq.8.1.6.1 of AS5100.5:2017
+    option: 0, rectangular sections; 1: T- and L-sections with the web in tension;
+    2: T- and L-sections iwth flange in tension'''
+    
+    if option ==0:
+        alphab = 0.2
+    else:
+        bef = kwargs.get('bef')
+        bw = kwargs.get('bw')
+        Ds = kwargs.get('Ds')
+        if option==1:
+        
+            alphab = max([0.2+(bef/bw-1)*(0.4*Ds/D-0.18),0.2*(bef/bw)**0.25])
+        else:
+            alphab = max([0.2+(bef/bw-1)*(0.25*Ds/D-0.18),0.2*(bef/bw)**(2/3)])
+    
+    return alphab*(D/d)**2*fctf/fsy*bw*d
+def alpha2(fc):
+    alpha2 = 1.0 - 0.003*fc
+    if alpha2>0.85: alpha2 = 0.85
+    if alpha2<0.67: alpha2 = 0.67
+    return alpha2
+
+def gamma(fc):
+    '''Section 8.1.3 of As5100.5
+    fc: characteristic concrete compressive strength,MPa
+    b: the width of the cross -section of the stress block
+    d: the depth of the refinforcement steel from the extreme compressive concrete fibre, mm
+    ku: dn/d'''    
+    gamma = 1.05 - 0.007*fc    
+    if gamma>0.85: gamma = 0.85
+    if gamma<0.67: gamma = 0.67
+    return gamma
+def ku(fc,b,d,Mu):
+    Mu = abs(Mu)
+    p = [alpha2(fc)*gamma(fc)**2*fc*b*d**2/2e6,-alpha2(fc)*gamma(fc)*b*fc*d**2/1e6,Mu]
+    r = np.roots(p)
+    return [i for i in r if i >0 and i<1][0]
+def Cc(fc,b,d,Mu):
+    # the comrpessive force in the concrete
+    return alpha2(fc)*fc*gamma(fc)*b*ku(fc,b,d,Mu)*d/1e3
+
+
 ''' ==========================transverse reinforcement========================'''
 #--------------shear reinforcement------------------------------------------ 
 def TransverseReinforcementCheck(V,Vuc,phi,Pv,option=0,**kwargs):

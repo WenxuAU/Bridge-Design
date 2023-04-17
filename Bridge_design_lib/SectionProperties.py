@@ -10,11 +10,40 @@ import numpy as np
 class RectBeam:
     '''Rectangular shaped beam (solid section), x: width, y: depth
     '''
-    def __init__(self,x,y):
+    def __init__(self,x,y,**kwargs):
+        self.x = x
+        self.y = y
         self.Ag = x*y
         self.uc = 2*(x+y)
         self.Ig = x*y**3/12
         self.tw = 0.75*self.Ag/self.uc # effective wall thickness
+        self.Ast = 0 
+        self.dst = 0 
+        self.Asc = 0 
+        self.dsc = 0
+        self.n = 0
+        self.ue = self.uc
+        self.th = self.Ag/self.ue
+        if len(kwargs)>1:
+            self.n = kwargs.get('Es')/kwargs.get('Ec')
+            self.Ast = kwargs.get('Ast')
+            self.dst = kwargs.get('dst')      
+            if 'Asc' in kwargs:
+                self.Asc = kwargs.get('Asc')
+                self.dsc = kwargs.get('dsc')  
+     
+            self.kud = self.kud()
+            self.Icr = self.Icr()
+    def kud(self):
+        p =[self.x/2,self.n*self.Ast+(self.n-1)*self.Asc,\
+            -self.n*self.Ast*self.dst-(self.n-1)*self.Asc*self.dsc]
+        r = np.roots(p)
+        return [i for i in r if i > 0][0]
+    def Icr(self):
+        dn = self.kud
+        Icr = (self.n-1)*self.Asc*(dn-self.dsc)**2+self.x*dn**3/3+\
+           self.n*self.Ast*(self.dst-dn)**2
+        return {'dn':self.kud,'Icr':Icr}
 class TBeamParam1:
     '''calculate the geometric properties associated with the T-beam section
     
@@ -40,28 +69,56 @@ class TBeamParam1:
         self.hf1 = hf1
         self.hf2 = hf2
         self.h = h
-        self.d = d
+        self.Ast = 0
+        self.d = 0
+        self.Asc = 0
+        self.dsc = 0
+        self.n = 0
         if len(kwargs)>1:
             self.n = kwargs.get('Es')/kwargs.get('Ec')
-            self.As = kwargs.get('As')
-            self.gamma = kwargs.get('gamma')
-            self.dnIg = self.dnIg()
+            self.Ast = kwargs.get('Ast')
+            self.dst = kwargs.get('dst')
+            self.fc = kwargs.get('fc')
+            if 'Asc' in kwargs:
+                self.Asc = kwargs.get('Asc')
+                self.dsc = kwargs.get('dsc')           
             self.dnIcr = self.dnIcr()
+        self.gamma = self.gamma()
+        self.dnIg = self.dnIg()
         self.Ag = self.Ag()
         self.uc = self.uc()
-        
+        self.ue = self.ue()
+        self.th = 2*self.Ag/self.ue
+    def gamma(self):
+        '''Section 8.1.3 of As5100.5
+        fc: characteristic concrete compressive strength,MPa
+        b: the width of the cross -section of the stress block
+        d: the depth of the refinforcement steel from the extreme compressive concrete fibre, mm
+        ku: dn/d'''    
+        gamma = 1.05 - 0.007*self.fc    
+        if gamma>0.85: gamma = 0.85
+        if gamma<0.67: gamma = 0.67
+        return gamma
+    
     def Ag(self):
         return self.tf*self.hf1+(self.d-self.hf2)*self.tw+(self.hf2-self.hf1)*(self.tf-self.tw)
     def uc(self):
-        return 2*self.d-2*(self.hf2-self.hf1)+2*self.tf+\
+        return 2*self.d-2*(self.hf2-self.hf1)+ self.tf+self.tw+\
             2*(((self.tf-self.tw)/2)**2+(self.hf2-self.hf1)**2)**0.5
-    def dnIg(self):
-        dn = (self.tf*self.hf**2/2+self.tw*(self.h-self.hf)*(self.h+self.hf)/2)/ \
-            (self.tf*self.hf+self.tw*(self.h-self.hf))
+    def ue(self):
+        # the perimeter of a member plus half the perimeter of any internal voids,
+        # exposed to a drying environment
+        return self.uc
+    def dnIg(self,Ast,Asc=0):
+        '''Ig of an uncracked section, the steel is ignored'''
+        dn =(self.tf*self.h1**2/2+(self.tf-self.tw)*(self.h2-self.h1)*(self.h2+2*self.h1)/3+\
+            self.tw*(self.d-self.h1)*(self.d+self.h1)/2)/self.Ag
+        
         Ig = self.tf*self.hf**3/12+self.tf*self.hf*(dn-self.hf/2)**2+ \
             self.tw*(self.h-self.hf)**3/12+self.tw*(self.h-self.hf)*((self.hf+self.h)/2-dn)**2
         return {'dn':dn,'Ig':Ig}
-    def dnIcr(self):
+    def dnIcr(self,Ast,Asc=0):
+        '''2nd moment of area of a fully cracked section'''
         p = [self.tw/2,(self.tf-self.tw)*self.hf+self.n*self.As,
              -(self.tf-self.tw)*self.hf**2/2-self.n*self.As*self.d]
         
@@ -76,49 +133,66 @@ class TBeamParam:
     
                        /_____________tf________________/
                     /    
-                 /  |   |------------------------------|    /
-                 \  hf  |                              |    \
+                 /  |   |------------------------------| |  /
+                 \  hf  |o o o o o o o o o o o o o o o |dsc \
                  \  |   |------------------------------|    \
                  \  /              |        |               \
-                 h                 |        |               d
+                 h                 |        |               dst
                  \                 |        |               \
                  \                 |        |               \
                  \                 | o o o--\---------------/
                  \                 |________|
                  /                 /---tw--/
     '''
-    def __init__(self,tf,tw,hf,h,d,As,Es,Ec,gamma):
+    def __init__(self,tf,tw,hf,h,**kwargs):
         self.tf = tf
         self.tw = tw
         self.hf = hf
         self.h = h
-        self.d = d
-        self.n = Es/Ec
-        self.As = As
-        self.gamma = gamma
+        self.Ast = 0
+        self.dst = 0
+        self.Asc = 0
+        self.dsc = 0
+        self.n = 0
+        
         self.Ag = self.Ag()
-        self.uc = self.uc()
+        # self.uc = self.uc()
+        # self.ue = self.ue()
+        # self.th = 2*self.Ag/self.ue
         self.dnIg = self.dnIg()
-        self.dnIcr = self.dnIcr()
+        
+        if len(kwargs)>1:
+            self.n = kwargs.get('Es')/kwargs.get('Ec')
+            self.Ast = kwargs.get('Ast')
+            self.dst = kwargs.get('dst')
+      
+            if 'Asc' in kwargs:
+                self.Asc = kwargs.get('Asc')
+                self.dsc = kwargs.get('dsc')  
+     
+            self.kud = self.kud()
+            self.Icr = self.Icr()        
+
     def Ag(self):
-        return self.tf*self.hf+(self.d-self.hf)*self.tw
+        return self.tf*self.hf+ (self.h-self.hf)*self.tw
     def uc(self):
-        return 2*self.d+2*self.tf
+        return 2*self.dst+2*self.tf
     def dnIg(self):
-        dn = (self.tf*self.hf**2/2+self.tw*(self.h-self.hf)*(self.h+self.hf)/2)/ \
-            (self.tf*self.hf+self.tw*(self.h-self.hf))
+        dn = (self.tf*self.hf**2/2+self.tw*(self.h-self.hf)*(self.h+self.hf)/2)/self.Ag
+ 
         Ig = self.tf*self.hf**3/12+self.tf*self.hf*(dn-self.hf/2)**2+\
             self.tw*(self.h-self.hf)**3/12+self.tw*(self.h-self.hf)*((self.hf+self.h)/2-dn)**2
         return {'dn':dn,'Ig':Ig}
-    def dnIcr(self):
-        p = [self.tw/2,(self.tf-self.tw)*self.hf+self.n*self.As,
-             -(self.tf-self.tw)*self.hf**2/2-self.n*self.As*self.d]
-        
+    def kud(self):    
+        p = [self.tw/2,(self.tf-self.tw)*self.hf+self.n*self.Ast+(self.n-1)*self.Asc,
+             -(self.tf-self.tw)*self.hf**2/2-self.n*self.Ast*self.dst-(self.n-1)*self.Asc*self.dsc]        
         r = np.roots(p)
-        a = [i for i in r if i > 0][0]
-        Icr = (self.h-self.tw)*self.hf**3/12+(self.tf-self.tw)*self.hf*(a-self.hf/2)**2+\
-            self.tw*a**3/3+self.n*self.As*(self.d-a)**2
-        return {'dn':a/self.gamma,'Icr':Icr}
+        return [i for i in r if i > 0][0]
+    def Icr(self):        
+        Icr = (self.tf-self.tw)*self.hf**3/12+(self.tf-self.tw)*self.hf*\
+            (self.kud-self.hf/2)**2+\
+            self.tw*self.kud**3/3+self.n*self.Ast*(self.dst-self.kud)**2
+        return {'dn':self.kud,'Icr':Icr}
 
 class IBeamParam:
     '''calculate the geometric properties associated with the I-beam section
@@ -156,6 +230,7 @@ class IBeamParam:
         self.h2 = h2
         self.h = h
         self.Ag = 2*(tf*h1+(tf-tw)/2*h2+tw*(h2+h/2))
+        self.dnIg()
     def dnIg(self):
         dn = self.h1+self.h2+self.h/2
         Ig = self.tf*self.h1**3/12+self.tf*self.h1*(dn-self.h1/2)**2+\

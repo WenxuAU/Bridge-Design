@@ -45,6 +45,9 @@ def Mcr(sigmaCs,fctf,P,Ag,e,Z):
     # return the cracking moment
     return Z*sigmaCr+P*e
 
+def Muomin(fctf,P,e,Ag,Ig,Z): 
+    '''Minimum strength requirements, Eq.8.1.6.1 of AS5100.5:2017'''
+    return 1.2*(Z*(fctf/1e6+P/Ag/1e3)+P*e/1e3)
 
 def Ief(Ig,Icr,Mcr,Ms,Iefmax):
     '''the effective moment of area'''

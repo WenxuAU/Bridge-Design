@@ -35,6 +35,7 @@ def epsilonx(M,dv,V,Pv,N,fpo,Es,Ast,Ep,Apt,Ec,Act):
     if tmp>=0:
         # tensile, epsilonx>0
         Area = 2*(Es*Ast+Ep*Apt)
+        print('Nominator and denominator are {:.2f} and {:.2f}, respectively'.format(tmp,Area))
         return min([tmp/Area,3e-3])
     else:
         Area = 2*(Es*Ast+Ep*Apt+Ec*Act)

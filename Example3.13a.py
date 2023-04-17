@@ -26,7 +26,7 @@ phi2 = 0.7 # for web crushing
 w = 380 # uniform design load, kN/m
 
 # design loads: Md and Vd
-Resultants = Loading_Effects.UniformLoad(w*1e3, l/1e3, dv/1e3)
+Resultants = ActionEffects.UniformLoad(w*1e3, l/1e3, dv/1e3)
 Md = Resultants.M/1000
 Vd = Resultants.V/1000
 
@@ -55,8 +55,9 @@ if Asv_s>Asv_s_min:
 # check the longitudinal reinforcement
 dFtd = ReinforcementDesign.dFtdShear(Vd, 0, Vus, phi1, thetav)
 dFcd = ReinforcementDesign.dFcdShear(Vd, 0, Vus, phi1, thetav, 0)
-Ftd = ReinforcementDesign.Ftd(Md, 0, dFtd)
-Fcd = ReinforcementDesign.Fcd(Md, 0, dFcd)
+z = dv
+Ftd = ReinforcementDesign.Ftd(Md, 0, dFtd,z)
+Fcd = ReinforcementDesign.Fcd(Md, 0, dFcd,z)
 
 Fu = 2652
 print('Fu {:.2f} kN, phi*Fu {:.2f} kN, Ftd {:.2f} kN, Fcd {:.2f} kN'.format(Fu,phi1*Fu,Ftd,Fcd))
@@ -87,7 +88,8 @@ if Asv_s>Asv_s_min:
 # check the longitudinal reinforcement
 dFtd = ReinforcementDesign.dFtdShear(Vd, 0, Vus, phi1, thetav)
 dFcd = ReinforcementDesign.dFcdShear(Vd, 0, Vus, phi1, thetav, 0)
-Ftd = ReinforcementDesign.Ftd(Md, 0, dFtd)
-Fcd = ReinforcementDesign.Fcd(Md, 0, dFcd)    
+z = dv
+Ftd = ReinforcementDesign.Ftd(Md, 0, dFtd,z)
+Fcd = ReinforcementDesign.Fcd(Md, 0, dFcd,z)    
 Fu = 2040
 print('Fu {:.2f} kN, phi*Fu {:.2f} kN, Ftd {:.2f} kN, Fcd {:.2f} kN'.format(Fu,phi1*Fu,Ftd,Fcd))
